@@ -10,7 +10,7 @@ DOCKER_BUILDKIT=1
 
 IMAGE ?= docksal/apache
 VERSION ?= 2.4
-UPSTREAM_IMAGE ?= httpd:2.4.35-alpine
+UPSTREAM_IMAGE ?= httpd:2.4.52-alpine
 BUILD_IMAGE_TAG ?= $(IMAGE):$(VERSION)-build
 NAME = docksal-apache-$(VERSION)
 

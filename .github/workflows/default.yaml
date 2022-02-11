@@ -18,7 +18,7 @@ defaults:
 
 env:
   IMAGE: docksal/apache
-  UPSTREAM_IMAGE: httpd:2.4.35-alpine
+  UPSTREAM_IMAGE: httpd:2.4.52-alpine
   #DOCKSAL_VERSION: develop
 
 jobs:

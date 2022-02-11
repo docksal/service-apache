@@ -1,9 +1,13 @@
 ARG UPSTREAM_IMAGE
 FROM ${UPSTREAM_IMAGE}
 
+# TODO: Drop this? HTTPS termination should happen at the reverse proxy and this is not used anyway.
 # Generate a self-signed cert
 RUN set -xe; \
-	apk add --update --no-cache openssl; \
+	apk add --update --no-cache \
+		bash \
+		openssl \
+	; \
 	openssl req -batch -x509 -newkey rsa:4096 -days 3650 -nodes -sha256 -subj "/" \
 		-keyout /usr/local/apache2/conf/server.key -out /usr/local/apache2/conf/server.crt; \
 	apk del openssl; \
