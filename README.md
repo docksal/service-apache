@@ -51,7 +51,7 @@ Use `.docksal/etc/apache/httpd-vhosts.conf` to define additional virtual hosts:
 
 ```apacheconfig
 <VirtualHost *:80>
-	ServerName docs.test.docksal
+	ServerName docs.docksal.site
 
 	ProxyPass / http://docs.docksal.io/
 	ProxyPassReverse / http://docs.docksal.io/
