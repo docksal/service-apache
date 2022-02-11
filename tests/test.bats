@@ -31,7 +31,7 @@ _healthcheck ()
 # Waits for containers to become healthy
 _healthcheck_wait ()
 {
-	# Wait for cli to become ready by watching its health status
+	# Wait for container to become ready by watching its health status
 	local container_name="${NAME}"
 	local delay=5
 	local timeout=30
@@ -66,23 +66,23 @@ _healthcheck_wait ()
 
 	### Tests ###
 
-	run curl -sSk -I http://test.docksal:2580
+	run curl -sSk -m 1 -I http://localhost:2580
 	[[ "$output" =~ "HTTP/1.1 200 OK" ]]
 	unset output
 
-	run curl -sSk https://test.docksal:25443
+	run curl -sSk -m 1 http://localhost:2580
 	[[ "$output" =~ "It works!" ]]
 	unset output
 
-	run curl -sSk -I https://test.docksal:25443
+	run curl -sSk -m 1 -I https://localhost:25443
 	[[ "$output" =~ "HTTP/1.1 200 OK" ]]
 	unset output
 
-	run curl -sSk https://test.docksal:25443
+	run curl -sSk -m 1 https://localhost:25443
 	[[ "$output" =~ "It works!" ]]
 	unset output
 
-	run curl -sSk -I http://test.docksal:2580/nonsense
+	run curl -sSk -m 1 -I http://localhost:2580/nonsense
 	[[ "$output" =~ "HTTP/1.1 404 Not Found" ]]
 	unset output
 
@@ -96,7 +96,7 @@ _healthcheck_wait ()
 
 	### Setup ###
 	VOLUMES="\
-		-v $(pwd)/../tests/docroot:/var/www/docroot" \
+		-v $(pwd)/tests/docroot:/var/www/docroot" \
 		make start
 
 	run _healthcheck_wait
@@ -104,11 +104,11 @@ _healthcheck_wait ()
 
 	### Tests ###
 
-	run curl -sSk -I http://test.docksal:2580
+	run curl -sSk -m 1 -I http://localhost:2580
 	[[ "$output" =~ "HTTP/1.1 200 OK" ]]
 	unset output
 
-	run curl -sSk http://test.docksal:2580
+	run curl -sSk -m 1 http://localhost:2580
 	[[ "$output" =~ "index.html" ]]
 	unset output
 
@@ -121,7 +121,7 @@ _healthcheck_wait ()
 
 	### Setup ###
 	VOLUMES="\
-		-v $(pwd)/../tests/docroot:/var/www/html" \
+		-v $(pwd)/tests/docroot:/var/www/html" \
 	ENV="\
 		-e APACHE_DOCUMENTROOT=/var/www/html" \
 		make start
@@ -131,11 +131,11 @@ _healthcheck_wait ()
 
 	### Tests ###
 
-	run curl -sSk -I http://test.docksal:2580
+	run curl -sSk -m 1 -I http://localhost:2580
 	[[ "$output" =~ "HTTP/1.1 200 OK" ]]
 	unset output
 
-	run curl -sSk http://test.docksal:2580
+	run curl -sSk -m 1 http://localhost:2580
 	[[ "$output" =~ "index.html" ]]
 	unset output
 
@@ -148,7 +148,7 @@ _healthcheck_wait ()
 
 	### Setup ###
 	VOLUMES=" \
-		-v $(pwd)/../tests/docroot:/var/www/docroot" \
+		-v $(pwd)/tests/docroot:/var/www/docroot" \
 	ENV=" \
 		-e APACHE_BASIC_AUTH_USER=user \
 		-e APACHE_BASIC_AUTH_PASS=pass" \
@@ -160,12 +160,12 @@ _healthcheck_wait ()
 	### Tests ###
 
 	# Check authorization is required
-	run curl -sSk -I http://test.docksal:2580
+	run curl -sSk -m 1 -I http://localhost:2580
 	[[ "$output" =~ "HTTP/1.1 401 Unauthorized" ]]
 	unset output
 
 	# Check we can pass authorization
-	run curl -sSk -I -u user:pass http://test.docksal:2580
+	run curl -sSk -m 1 -I -u user:pass http://localhost:2580
 	[[ "$output" =~ "HTTP/1.1 200 OK" ]]
 	unset output
 
@@ -178,8 +178,8 @@ _healthcheck_wait ()
 
 	### Setup ###
 	VOLUMES=" \
-		-v $(pwd)/../tests/docroot:/var/www/docroot \
-		-v $(pwd)/../tests/config:/var/www/.docksal/etc/apache" \
+		-v $(pwd)/tests/docroot:/var/www/docroot \
+		-v $(pwd)/tests/config:/var/www/.docksal/etc/apache" \
 		make start
 
 	run _healthcheck_wait
@@ -188,12 +188,12 @@ _healthcheck_wait ()
 	### Tests ###
 
 	# Test default virtual host config overrides
-	run curl -sSk http://test2.docksal:2580
+	run curl -sSk -m 1 http://localhost:2580
 	[[ "$output" =~ "index2.html" ]]
 	unset output
 
 	# Test extra virtual hosts config
-	run curl -sSk -L http://test3.docksal:2580
+	run curl -sSk -m 1 -H "Host: test3.docksal.site" http://localhost:2580
 	[[ "$output" =~ "index3.html" ]]
 	unset output
 
