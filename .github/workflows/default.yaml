@@ -18,7 +18,6 @@ defaults:
 
 env:
   IMAGE: docksal/apache
-  UPSTREAM_IMAGE: httpd:2.4.52-alpine
   #DOCKSAL_VERSION: develop
 
 jobs:
@@ -34,15 +33,18 @@ jobs:
             platform: linux/amd64
             arch: amd64
             version: "2.4"
+            upstream_image: httpd:2.4.52-alpine
           -
             platform: linux/arm64
             arch: arm64
             version: "2.4"
+            upstream_image: httpd:2.4.52-alpine
 
     env:
       ARCH: ${{ matrix.arch }}
       VERSION_PREFIX: ""
       VERSION: ${{ matrix.version }}
+      UPSTREAM_IMAGE: ${{ matrix.upstream_image }}
 
     steps:
       -
