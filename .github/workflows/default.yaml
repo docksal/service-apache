@@ -30,21 +30,18 @@ jobs:
       matrix:
         include:
           -
-            platform: linux/amd64
             arch: amd64
             version: "2.4"
-            upstream_image: httpd:2.4.52-alpine
           -
-            platform: linux/arm64
             arch: arm64
             version: "2.4"
-            upstream_image: httpd:2.4.52-alpine
 
     env:
       ARCH: ${{ matrix.arch }}
       VERSION_PREFIX: ""
       VERSION: ${{ matrix.version }}
-      UPSTREAM_IMAGE: ${{ matrix.upstream_image }}
+      UPSTREAM_IMAGE: httpd:${{ matrix.version }}-alpine
+      BUILD_DIR: "."
 
     steps:
       -
@@ -54,20 +51,21 @@ jobs:
         name: Environment variables
         run: |
           # Export variables for further steps
-          echo "GIT_SHA7=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-          echo "BUILD_CONTEXT=." >> ${GITHUB_ENV}
-          echo "BUILD_IMAGE_TAG=${IMAGE}:${VERSION_PREFIX}${VERSION}-build" >> ${GITHUB_ENV}
+          echo GIT_SHA7="${GITHUB_SHA:0:7}" | tee -a ${GITHUB_ENV}
+          echo BUILD_IMAGE_TAG="${IMAGE}:${VERSION_PREFIX}${VERSION}-build" | tee -a ${GITHUB_ENV}
+          # Pull the host public SSH key at runtime instead of relying on a static value stored in secrets.
+          echo ARM64_HOST_SSH_CERT="$(ssh-keyscan -t rsa ${{ secrets.ARM64_HOST }} 2>/dev/null)" | tee -a ${GITHUB_ENV}
 #      -
 #        # Switch docker context to a remote arm64 host
 #        # Used for building heavy images that take too long to build using QEMU + for native arm64 testing.
 #        name: Switch to arm64 builder host
 #        if: ${{ env.ARCH == 'arm64' }}
-#        uses: arwynfr/actions-docker-context@98fc92878d0b856c1112c79b8d0f45353206e186
+#        uses: arwynfr/actions-docker-context@v2
 #        with:
 #          docker_host: "ssh://ubuntu@${{ secrets.ARM64_HOST }}"
 #          context_name: arm64-host
 #          ssh_key: "${{ secrets.ARM64_HOST_SSH_KEY }}"
-#          ssh_cert: "${{ secrets.ARM64_HOST_SSH_CERT }}"
+#          ssh_cert: "${{ env.ARM64_HOST_SSH_CERT }}"
 #          use_context: true
       -
         name: Set up QEMU
@@ -91,8 +89,8 @@ jobs:
         name: Build image
         uses: docker/build-push-action@v2
         with:
-          context: ${{ env.BUILD_CONTEXT }}
-          file: ${{ env.BUILD_CONTEXT }}/Dockerfile
+          context: ${{ env.BUILD_DIR }}
+          file: ${{ env.BUILD_DIR }}/Dockerfile
           build-args: |
             UPSTREAM_IMAGE=${{ env.UPSTREAM_IMAGE }}
             VERSION=${{ env.VERSION }}
@@ -114,14 +112,12 @@ jobs:
       matrix:
         include:
           -
-            platform: linux/amd64
             arch: amd64
             version: "2.4"
           # Disabled arm64 tests.
-          # TODO: Figure out a way to run tests on a remote host.
+          # TODO: Refactor tests to be compatible with a remote host test runner.
           # TODO: Remember to re-enabled the test results check in "push".
           #-
-          #  platform: linux/arm64
           #  arch: arm64
           #  version: 2.4
 
@@ -143,19 +139,21 @@ jobs:
         name: Environment variables
         run: |
           # Export variables for further steps
-          echo "GIT_SHA7=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-          echo "BUILD_IMAGE_TAG=${IMAGE}:${VERSION_PREFIX}${VERSION}-build" >> ${GITHUB_ENV}
+          echo GIT_SHA7="${GITHUB_SHA:0:7}" | tee -a ${GITHUB_ENV}
+          echo BUILD_IMAGE_TAG="${IMAGE}:${VERSION_PREFIX}${VERSION}-build" | tee -a ${GITHUB_ENV}
+          # Pull the host public SSH key at runtime instead of relying on a static value stored in secrets.
+          echo ARM64_HOST_SSH_CERT="$(ssh-keyscan -t rsa ${{ secrets.ARM64_HOST }} 2>/dev/null)" | tee -a ${GITHUB_ENV}
       -
         # Switch docker context to a remote arm64 host
         # Used for building heavy images that take too long to build using QEMU + for native arm64 testing.
         name: Switch to arm64 builder host
         if: ${{ env.ARCH == 'arm64' }}
-        uses: arwynfr/actions-docker-context@98fc92878d0b856c1112c79b8d0f45353206e186
+        uses: arwynfr/actions-docker-context@v2
         with:
           docker_host: "ssh://ubuntu@${{ secrets.ARM64_HOST }}"
           context_name: arm64-host
           ssh_key: "${{ secrets.ARM64_HOST_SSH_KEY }}"
-          ssh_cert: "${{ secrets.ARM64_HOST_SSH_CERT }}"
+          ssh_cert: "${{ env.ARM64_HOST_SSH_CERT }}"
           use_context: true
       -
         name: Check Docker
@@ -176,7 +174,7 @@ jobs:
         # Run tests
         name: Test
         id: tests
-        working-directory: ${{ env.BUILD_CONTEXT }}
+        working-directory: ${{ env.BUILD_DIR }}
         env:
           BUILD_IMAGE_TAG: ${{ env.BUILD_IMAGE_TAG }}-${{ env.GIT_SHA7 }}-${{ env.ARCH }}
           VERSION: ${{ env.VERSION }}
@@ -218,8 +216,10 @@ jobs:
         name: Environment variables
         run: |
           # Export variables for further steps
-          echo "GIT_SHA7=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-          echo "BUILD_IMAGE_TAG=${IMAGE}:${VERSION_PREFIX}${VERSION}-build" >> ${GITHUB_ENV}
+          echo GIT_SHA7="${GITHUB_SHA:0:7}" | tee -a ${GITHUB_ENV}
+          echo BUILD_IMAGE_TAG="${IMAGE}:${VERSION_PREFIX}${VERSION}-build" | tee -a ${GITHUB_ENV}
+          # Pull the host public SSH key at runtime instead of relying on a static value stored in secrets.
+          echo ARM64_HOST_SSH_CERT="$(ssh-keyscan -t rsa ${{ secrets.ARM64_HOST }} 2>/dev/null)" | tee -a ${GITHUB_ENV}
       -
         # Login to Docker Hub
         name: Login to Docker Hub
