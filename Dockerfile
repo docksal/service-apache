@@ -20,6 +20,7 @@ ENV \
 
 RUN set -xe; \
 	# Enabled extra modules
+	sed -i '/^#.* deflate_module /s/^#//' /usr/local/apache2/conf/httpd.conf; \
 	sed -i '/^#.* proxy_module /s/^#//' /usr/local/apache2/conf/httpd.conf; \
 	sed -i '/^#.* proxy_http_module /s/^#//' /usr/local/apache2/conf/httpd.conf; \
 	sed -i '/^#.* proxy_fcgi_module /s/^#//' /usr/local/apache2/conf/httpd.conf; \
