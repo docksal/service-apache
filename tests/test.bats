@@ -200,3 +200,32 @@ _healthcheck_wait ()
 	### Cleanup ###
 	make clean
 }
+
+@test "Configuration overrides - Directory block" {
+	[[ $SKIP == 1 ]] && skip
+
+	### Setup ###
+	VOLUMES=" \
+		-v $(pwd)/tests/docroot:/var/www/docroot \
+		-v $(pwd)/tests/config-directory-override:/var/www/.docksal/etc/apache" \
+		make start
+
+	run _healthcheck_wait
+	unset output
+
+	### Tests ###
+
+	# Test that a <Directory> override takes precedence over host.conf's <Directory> block
+	# This verifies the include order fix (overrides must load after the standard config)
+	run curl -sSk -m 1 -I http://localhost:2580
+	[[ "$output" =~ "HTTP/1.1 403 Forbidden" ]]
+	unset output
+
+	# HTTPS should also be overridden
+	run curl -sSk -m 1 -I https://localhost:25443
+	[[ "$output" =~ "HTTP/1.1 403 Forbidden" ]]
+	unset output
+
+	### Cleanup ###
+	make clean
+}
