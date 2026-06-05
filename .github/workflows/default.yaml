@@ -44,7 +44,6 @@ jobs:
       ARCH: ${{ matrix.arch }}
       VERSION_PREFIX: ""
       VERSION: ${{ matrix.version }}
-      UPSTREAM_IMAGE: httpd:${{ matrix.version }}-alpine
       BUILD_DIR: "."
 
     steps:
@@ -79,7 +78,6 @@ jobs:
           context: ${{ env.BUILD_DIR }}
           file: ${{ env.BUILD_DIR }}/Dockerfile
           build-args: |
-            UPSTREAM_IMAGE=${{ env.UPSTREAM_IMAGE }}
             VERSION=${{ env.VERSION }}
           platforms: linux/${{ env.ARCH }}
           # Push intermediate arch-specific build tag to repo
