@@ -1,4 +1,4 @@
-ARG UPSTREAM_IMAGE
+ARG UPSTREAM_IMAGE=httpd:2.4-alpine
 FROM ${UPSTREAM_IMAGE}
 
 # TODO: Drop this? HTTPS termination should happen at the reverse proxy and this is not used anyway.

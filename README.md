@@ -4,7 +4,7 @@ This image(s) is part of the [Docksal](http://docksal.io) image library.
 
 ## Versions
 
-- apache2.4 (based on http:2.4-alpine)
+- apache2.4 (based on httpd:2.4.67-alpine)
 
 ## Features
 
